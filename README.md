@@ -1,6 +1,6 @@
 # Bicky_frontend
 
-基于https://github.com/ant-design/ant-design-pro.git(d13c881)开发。
+基于[ANT DESIGN PRO](https://github.com/ant-design/ant-design-pro.git)开发。
 
 
 ## 兼容性
