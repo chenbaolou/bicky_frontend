@@ -80,6 +80,17 @@ const menuData = [
     ],
   },
   {
+    name: 'AP网元配置',
+    icon: 'table',
+    path: 'ap',
+    children: [
+      {
+        name: 'AP网元基本配置',
+        path: 'ap-list',
+      },
+    ],
+  },
+  {
     name: '详情页',
     icon: 'profile',
     path: 'profile',

@@ -77,3 +77,11 @@ export async function fakeRegister(params) {
 export async function queryNotices() {
   return request('/api/notices');
 }
+
+export async function ap(params) {
+  return request(`/ap?${stringify(params)}`);
+}
+
+export async function queryAPType(params) {
+  return request(`/aptype?${stringify(params)}`);
+}

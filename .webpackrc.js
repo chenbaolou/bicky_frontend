@@ -27,4 +27,9 @@ export default {
   disableDynamicImport: true,
   publicPath: '/',
   hash: true,
+  proxy: {
+    '/': {
+      target: 'http://localhost:9000',
+    },
+  },
 };
