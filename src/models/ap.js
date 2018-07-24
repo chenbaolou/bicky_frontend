@@ -1,4 +1,4 @@
-import { ap, queryAPType } from '../services/api';
+import { ap, queryAPType, add, edit, remove, batch } from '../api/ap';
 
 export default {
   namespace: 'ap',
@@ -27,7 +27,15 @@ export default {
       });
     },
     *add({ payload, callback }, { call, put }) {
-      const response = yield call(ap, payload);
+      const response = yield call(add, payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+      if (callback) callback();
+    },
+    *edit({ payload, callback }, { call, put }) {
+      const response = yield call(edit, payload);
       yield put({
         type: 'save',
         payload: response,
@@ -35,7 +43,15 @@ export default {
       if (callback) callback();
     },
     *remove({ payload, callback }, { call, put }) {
-      const response = yield call(ap, payload);
+      const response = yield call(remove, payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+      if (callback) callback();
+    },
+    *batch({ payload, callback }, { call, put }) {
+      const response = yield call(batch, payload);
       yield put({
         type: 'save',
         payload: response,

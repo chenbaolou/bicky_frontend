@@ -2,28 +2,10 @@ import React, { Fragment } from 'react';
 import { Link, Redirect, Switch, Route } from 'dva/router';
 import DocumentTitle from 'react-document-title';
 import { Icon } from 'antd';
-import GlobalFooter from '../components/GlobalFooter';
+import GlobalFooter from 'components/GlobalFooter';
 import styles from './UserLayout.less';
 import logo from '../assets/logo.svg';
 import { getRoutes, getPageQuery, getQueryPath } from '../utils/utils';
-
-const links = [
-  {
-    key: 'help',
-    title: '帮助',
-    href: '',
-  },
-  {
-    key: 'privacy',
-    title: '隐私',
-    href: '',
-  },
-  {
-    key: 'terms',
-    title: '条款',
-    href: '',
-  },
-];
 
 const copyright = (
   <Fragment>
@@ -77,7 +59,7 @@ class UserLayout extends React.PureComponent {
               <Redirect from="/user" to={getLoginPathWithRedirectPath()} />
             </Switch>
           </div>
-          <GlobalFooter links={links} copyright={copyright} />
+          <GlobalFooter copyright={copyright} />
         </div>
       </DocumentTitle>
     );

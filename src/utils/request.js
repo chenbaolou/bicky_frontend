@@ -1,7 +1,7 @@
 import fetch from 'dva/fetch';
 import { notification } from 'antd';
 import { routerRedux } from 'dva/router';
-import store from '../index';
+import store from '..';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -46,11 +46,16 @@ export default function request(url, options) {
   const defaultOptions = {
     credentials: 'include',
   };
+  // 登录url不校验是否成功认证
+  if (url !== '/user/login/') {
+    defaultOptions['X-Requested-With'] = 'XMLHttpRequest';
+  }
   const newOptions = { ...defaultOptions, ...options };
   if (
     newOptions.method === 'POST' ||
     newOptions.method === 'PUT' ||
-    newOptions.method === 'DELETE'
+    newOptions.method === 'DELETE' ||
+    newOptions.method === 'PATCH'
   ) {
     if (!(newOptions.body instanceof FormData)) {
       newOptions.headers = {

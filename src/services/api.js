@@ -75,11 +75,41 @@ export async function fakeRegister(params) {
 }
 
 export async function queryNotices() {
-  return request('/api/notices');
+  return request('/notice');
 }
 
 export async function ap(params) {
   return request(`/ap?${stringify(params)}`);
+}
+
+export async function checkAPUnique(params) {
+  return request(`/ap/checkUnique?${stringify(params)}`);
+}
+
+export async function apDetail(apIndex) {
+  return request(`/ap/${apIndex}/`);
+}
+
+export async function addAP(params) {
+  return request('/ap/', {
+    method: 'POST',
+    body: params,
+  });
+}
+
+export async function editAP(params) {
+  const { apIndex, ..._params } = params;
+  return request(`/ap/${apIndex}/`, {
+    method: 'PATCH',
+    body: _params,
+  });
+}
+
+export async function deleteAP(params) {
+  const { apIndex } = params;
+  return request(`/ap/${apIndex}/`, {
+    method: 'DELETE',
+  });
 }
 
 export async function queryAPType(params) {

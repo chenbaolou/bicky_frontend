@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'C:/Users/chenb/AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/puppeteer';
 
 describe('Login', () => {
   let browser;

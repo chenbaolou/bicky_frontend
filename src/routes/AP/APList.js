@@ -1,89 +1,18 @@
 import React, { PureComponent, Fragment } from 'react';
 import { connect } from 'dva';
-import {
-  Row,
-  Col,
-  Card,
-  Form,
-  Input,
-  Select,
-  Icon,
-  Button,
-  Dropdown,
-  Menu,
-  Modal,
-  message,
-} from 'antd';
+import { Row, Col, Card, Form, Input, Button, message, Popconfirm, Divider } from 'antd';
 import StandardTable from 'components/StandardTable';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import { checkMAC } from '../../custom/Validator/Input';
+import APModal from './APModal';
 
 import styles from './APList.less';
 
 const FormItem = Form.Item;
-const { Option } = Select;
 
 const getValue = obj =>
   Object.keys(obj)
     .map(key => obj[key])
     .join(',');
-
-const CreateForm = Form.create()(props => {
-  const { modalVisible, form, handleAdd, handleModalVisible, apType } = props;
-  const apTypeData = apType;
-  const okHandle = () => {
-    form.validateFields((err, fieldsValue) => {
-      if (err) return;
-      form.resetFields();
-      handleAdd(fieldsValue);
-    });
-  };
-  return (
-    <Modal
-      title="新增AP"
-      visible={modalVisible}
-      onOk={okHandle}
-      onCancel={() => handleModalVisible()}
-    >
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="AP名称">
-        {form.getFieldDecorator('apname', {
-          rules: [
-            { required: true, message: 'AP名称不能为空' },
-            { max: 128, message: 'AP名称最大长度不能超过128个字符' },
-          ],
-        })(<Input placeholder="请输入" />)}
-      </FormItem>
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="基地址">
-        {form.getFieldDecorator('basemac', {
-          rules: [{ required: true, message: '基地址不能为空' }, { validator: checkMAC }],
-        })(<Input />)}
-      </FormItem>
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="设备类型">
-        {form.getFieldDecorator('apType', {
-          rules: [{ required: true, message: 'Please input some description...' }],
-          initialValue: apTypeData.length > 0 ? String(apTypeData[0].apType) : '0',
-        })(
-          <Select style={{ width: '100%' }}>
-            {apTypeData.length > 0 &&
-              apTypeData.map(item => {
-                return <Option key={item.apType}>{item.typeName}</Option>;
-              })}
-          </Select>
-        )}
-      </FormItem>
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="设备位置">
-        {form.getFieldDecorator('location', {
-          rules: [{ required: true, message: 'Please input some description...' }],
-        })(<Input placeholder="请输入" />)}
-      </FormItem>
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="备注">
-        {form.getFieldDecorator('apMemo', {
-          rules: [{ required: true, message: 'Please input some description...' }],
-        })(<Input placeholder="请输入" />)}
-      </FormItem>
-    </Modal>
-  );
-});
 
 @connect(({ ap, loading }) => ({
   ap,
@@ -94,7 +23,7 @@ export default class APList extends PureComponent {
   state = {
     modalVisible: false,
     selectedRows: [],
-    formValues: {},
+    searchFormValues: {},
   };
 
   componentDidMount() {
@@ -109,7 +38,7 @@ export default class APList extends PureComponent {
 
   handleStandardTableChange = (pagination, filtersArg, sorter) => {
     const { dispatch } = this.props;
-    const { formValues } = this.state;
+    const { searchFormValues } = this.state;
 
     const filters = Object.keys(filtersArg).reduce((obj, key) => {
       const newObj = { ...obj };
@@ -120,7 +49,7 @@ export default class APList extends PureComponent {
     const params = {
       currentPage: pagination.current,
       pageSize: pagination.pageSize,
-      ...formValues,
+      ...searchFormValues,
       ...filters,
     };
     if (sorter.field) {
@@ -137,37 +66,12 @@ export default class APList extends PureComponent {
     const { form, dispatch } = this.props;
     form.resetFields();
     this.setState({
-      formValues: {},
+      searchFormValues: {},
     });
     dispatch({
       type: 'ap/fetch',
       payload: {},
     });
-  };
-
-  handleMenuClick = e => {
-    const { dispatch } = this.props;
-    const { selectedRows } = this.state;
-
-    if (!selectedRows) return;
-
-    switch (e.key) {
-      case 'remove':
-        dispatch({
-          type: 'ap/remove',
-          payload: {
-            no: selectedRows.map(row => row.no).join(','),
-          },
-          callback: () => {
-            this.setState({
-              selectedRows: [],
-            });
-          },
-        });
-        break;
-      default:
-        break;
-    }
   };
 
   handleSelectRows = rows => {
@@ -190,7 +94,7 @@ export default class APList extends PureComponent {
       };
 
       this.setState({
-        formValues: values,
+        searchFormValues: values,
       });
 
       dispatch({
@@ -200,22 +104,60 @@ export default class APList extends PureComponent {
     });
   };
 
-  handleModalVisible = flag => {
+  handleModalVisible = (flag, editAPRecord) => {
     this.setState({
       modalVisible: !!flag,
+      editAPRecord,
     });
   };
 
-  handleAdd = fields => {
+  handleDelete = key => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'ap/add',
-      payload: {
-        description: fields.desc,
+      type: 'ap/remove',
+      payload: { apIndex: key },
+      callback: () => {
+        dispatch({
+          type: 'ap/fetch',
+        });
       },
     });
+  };
 
-    message.success('添加成功');
+  handleBatchDelete = () => {
+    const { dispatch } = this.props;
+    const { selectedRows } = this.state;
+    if (!selectedRows) return;
+    dispatch({
+      type: 'ap/batch',
+      payload: {
+        delete: selectedRows.map(row => row.apIndex).join(','),
+      },
+      callback: () => {
+        this.setState({
+          selectedRows: [],
+        });
+        dispatch({
+          type: 'ap/fetch',
+        });
+      },
+    });
+  };
+
+  handleModalSubmit = fields => {
+    const { dispatch } = this.props;
+    const type = fields.apIndex !== 0 ? 'edit' : 'add';
+    dispatch({
+      type: type === 'edit' ? 'ap/edit' : 'ap/add',
+      payload: fields,
+      callback: () => {
+        dispatch({
+          type: 'ap/fetch',
+        });
+      },
+    });
+    const typeMsg = type === 'edit' ? '修改成功' : '添加成功';
+    message.success(typeMsg);
     this.setState({
       modalVisible: false,
     });
@@ -257,28 +199,34 @@ export default class APList extends PureComponent {
       ap: { data, apType },
       loading,
     } = this.props;
-    const { selectedRows, modalVisible } = this.state;
+    const { selectedRows, modalVisible, editAPRecord } = this.state;
 
     const columns = [
       {
-        title: 'AP ID',
+        title: 'AP Index',
         dataIndex: 'apIndex',
+        width: 100,
+        fixed: 'left',
       },
       {
         title: 'AP名称',
         dataIndex: 'apname',
+        width: 150,
       },
       {
         title: '基地址',
         dataIndex: 'basemac',
+        width: 150,
       },
       {
         title: '设备类型',
         dataIndex: 'apType.typeName',
+        width: 200,
       },
       {
         title: '分组名称',
         dataIndex: 'group.groupName',
+        width: 140,
       },
       {
         title: '设备位置',
@@ -290,25 +238,26 @@ export default class APList extends PureComponent {
       },
       {
         title: '操作',
-        render: () => (
+        render: (text, record) => (
           <Fragment>
-            <a href="">配置</a>
+            <a href="javascript:;" onClick={() => this.handleModalVisible(true, record)}>
+              修改
+            </a>
+            <Divider type="vertical" />
+            <Popconfirm title="确认删除?" onConfirm={() => this.handleDelete(record.apIndex)}>
+              <a href="javascript:;">删除</a>
+            </Popconfirm>
           </Fragment>
         ),
+        width: 120,
       },
     ];
 
-    const menu = (
-      <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
-        <Menu.Item key="remove">删除</Menu.Item>
-        <Menu.Item key="approval">批量审批</Menu.Item>
-      </Menu>
-    );
-
     const parentMethods = {
-      handleAdd: this.handleAdd,
+      handleModalSubmit: this.handleModalSubmit,
       handleModalVisible: this.handleModalVisible,
       apType,
+      editAPRecord,
     };
 
     return (
@@ -320,14 +269,17 @@ export default class APList extends PureComponent {
               <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
                 新建
               </Button>
+              <Button icon="upload" type="primary" onClick={() => this.handleModalVisible(true)}>
+                导入
+              </Button>
+              <Button icon="download" type="primary" onClick={() => this.handleModalVisible(true)}>
+                导出
+              </Button>
               {selectedRows.length > 0 && (
                 <span>
-                  <Button>批量操作</Button>
-                  <Dropdown overlay={menu}>
-                    <Button>
-                      更多操作 <Icon type="down" />
-                    </Button>
-                  </Dropdown>
+                  <Popconfirm title="确认删除?" onConfirm={() => this.handleBatchDelete()}>
+                    <Button>批量删除</Button>
+                  </Popconfirm>
                 </span>
               )}
             </div>
@@ -339,10 +291,11 @@ export default class APList extends PureComponent {
               columns={columns}
               onSelectRow={this.handleSelectRows}
               onChange={this.handleStandardTableChange}
+              scroll={{ x: 1300 }}
             />
           </div>
         </Card>
-        <CreateForm {...parentMethods} modalVisible={modalVisible} />
+        <APModal {...parentMethods} modalVisible={modalVisible} />
       </PageHeaderLayout>
     );
   }
