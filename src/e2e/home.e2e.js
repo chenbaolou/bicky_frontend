@@ -1,4 +1,4 @@
-import puppeteer from 'C:/Users/chenb/AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/puppeteer';
+import puppeteer from 'puppeteer';
 
 describe('Homepage', () => {
   it('it should have logo text', async () => {

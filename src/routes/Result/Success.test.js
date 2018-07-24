@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow } from 'C:/Users/chenb/AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/enzyme';
+import { shallow } from 'enzyme';
 import Success from './Success';
 
 it('renders with Result', () => {
