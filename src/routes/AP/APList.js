@@ -4,6 +4,8 @@ import { Row, Col, Card, Form, Input, Button, message, Popconfirm, Divider } fro
 import StandardTable from 'components/StandardTable';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import APModal from './APModal';
+import APImport from './APImport';
+import { exportURL } from '../../api/ap';
 
 import styles from './APList.less';
 
@@ -22,6 +24,7 @@ const getValue = obj =>
 export default class APList extends PureComponent {
   state = {
     modalVisible: false,
+    importModalVisible: false,
     selectedRows: [],
     searchFormValues: {},
   };
@@ -104,11 +107,25 @@ export default class APList extends PureComponent {
     });
   };
 
-  handleModalVisible = (flag, editAPRecord) => {
+  handleModalVisible = (flag, record) => {
     this.setState({
       modalVisible: !!flag,
-      editAPRecord,
+      editRecord: record,
     });
+  };
+
+  handleImportModalVisible = flag => {
+    this.setState({
+      importModalVisible: !!flag,
+    });
+  };
+
+  handleExport = () => {
+    const a = document.createElement('a');
+    a.href = exportURL;
+    a.click();
+    // 使用完ObjectURL后需要及时释放, 否则会浪费浏览器存储区资源.
+    window.URL.revokeObjectURL(exportURL);
   };
 
   handleDelete = key => {
@@ -198,8 +215,9 @@ export default class APList extends PureComponent {
     const {
       ap: { data, apType },
       loading,
+      dispatch,
     } = this.props;
-    const { selectedRows, modalVisible, editAPRecord } = this.state;
+    const { selectedRows, modalVisible, editRecord, importModalVisible } = this.state;
 
     const columns = [
       {
@@ -257,7 +275,12 @@ export default class APList extends PureComponent {
       handleModalSubmit: this.handleModalSubmit,
       handleModalVisible: this.handleModalVisible,
       apType,
-      editAPRecord,
+      editRecord,
+    };
+
+    const importProps = {
+      handleModalVisible: this.handleImportModalVisible,
+      reload: () => dispatch({ type: 'ap/fetch' }),
     };
 
     return (
@@ -269,10 +292,14 @@ export default class APList extends PureComponent {
               <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
                 新建
               </Button>
-              <Button icon="upload" type="primary" onClick={() => this.handleModalVisible(true)}>
+              <Button
+                icon="upload"
+                type="primary"
+                onClick={() => this.handleImportModalVisible(true)}
+              >
                 导入
               </Button>
-              <Button icon="download" type="primary" onClick={() => this.handleModalVisible(true)}>
+              <Button icon="download" type="primary" onClick={() => this.handleExport()}>
                 导出
               </Button>
               {selectedRows.length > 0 && (
@@ -296,6 +323,7 @@ export default class APList extends PureComponent {
           </div>
         </Card>
         <APModal {...parentMethods} modalVisible={modalVisible} />
+        <APImport {...importProps} modalVisible={importModalVisible} />
       </PageHeaderLayout>
     );
   }

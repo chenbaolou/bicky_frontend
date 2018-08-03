@@ -24,15 +24,15 @@ export default class APModal extends PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { editAPRecord } = nextProps;
-    if (typeof editAPRecord !== 'undefined') {
+    const { editRecord } = nextProps;
+    if (typeof editRecord !== 'undefined') {
       this.setState({
-        apIndex: editAPRecord.apIndex,
-        apname: editAPRecord.apname,
-        basemac: editAPRecord.basemac,
-        apType: String(editAPRecord.apType.apType),
-        location: editAPRecord.location,
-        apMemo: editAPRecord.apMemo,
+        apIndex: editRecord.apIndex,
+        apname: editRecord.apname,
+        basemac: editRecord.basemac,
+        apType: String(editRecord.apType.apType),
+        location: editRecord.location,
+        apMemo: editRecord.apMemo,
       });
     }
   }

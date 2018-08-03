@@ -45,3 +45,12 @@ export async function batch(params) {
 export async function queryAPType(params) {
   return request(`/aptype?${stringify(params)}`);
 }
+
+export async function batchImportAP(params) {
+  return request(`/ap/batchImportAP/`, {
+    method: 'POST',
+    body: params,
+  });
+}
+
+export const exportURL = 'ap/export/';
